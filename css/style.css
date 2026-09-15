@@ -413,6 +413,60 @@ body {
   color: #fff;
 }
 
+/* Search Mode Selector (Semua vs Hanya Trigger) */
+.search-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.search-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.search-mode-pill:hover {
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+}
+
+.search-mode-pill.active {
+  background: rgba(0, 242, 254, 0.12);
+  color: var(--cyber-cyan);
+  border-color: var(--cyber-cyan);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+}
+
+.search-mode-pill svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.search-mode-pill.active svg {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.6));
+}
+
+.search-mode-pill:active {
+  transform: scale(0.96);
+}
+
 /* Category Pills (Horizontal Scroll) */
 .categories-scroll {
   display: flex;

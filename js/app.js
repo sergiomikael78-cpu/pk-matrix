@@ -17,6 +17,7 @@
     activeCategory: 'all',
     activeTab: 'pk', // 'pk' | 'keep'
     searchQuery: '',
+    searchMode: 'all', // 'all' | 'trigger'
     sortBy: 'default',
     totalCopiedCount: 0,
     pageSize: 30,
@@ -54,6 +55,9 @@
     // Search
     searchInput: document.getElementById('search-input'),
     btnClearSearch: document.getElementById('btn-clear-search'),
+    searchModeContainer: document.getElementById('search-mode-container'),
+    btnModeAll: document.getElementById('btn-mode-all'),
+    btnModeTrigger: document.getElementById('btn-mode-trigger'),
 
     // Categories
     categoriesContainer: document.getElementById('categories-container'),
@@ -397,6 +401,9 @@
       // Search filter
       if (query) {
         const triggerMatch = (item.trigger || '').toLowerCase().includes(query);
+        if (state.searchMode === 'trigger') {
+          return triggerMatch;
+        }
         const contentMatch = (item.content || '').toLowerCase().includes(query);
         const nameMatch = (item.name || '').toLowerCase().includes(query);
         return triggerMatch || contentMatch || nameMatch;
@@ -457,9 +464,11 @@
 
     // Update Result Text
     if (state.searchQuery || state.activeCategory !== 'all') {
-      elements.resultsCountText.textContent = `Menampilkan ${totalFiltered} dari ${totalAll} template`;
+      const modeSuffix = state.searchMode === 'trigger' ? ' (khusus trigger)' : '';
+      elements.resultsCountText.textContent = `Menampilkan ${totalFiltered} dari ${totalAll} template${modeSuffix}`;
     } else {
-      elements.resultsCountText.textContent = `Menampilkan ${totalFiltered} template`;
+      const modeSuffix = state.searchMode === 'trigger' ? ' (mode trigger aktif)' : '';
+      elements.resultsCountText.textContent = `Menampilkan ${totalFiltered} template${modeSuffix}`;
     }
 
     // Handle Empty State
@@ -511,8 +520,10 @@
     if (state.searchQuery.trim()) {
       const q = escapeRegExp(state.searchQuery.trim());
       const regex = new RegExp(`(${q})`, 'gi');
-      displayContent = displayContent.replace(regex, '<mark>$1</mark>');
       displayTrigger = displayTrigger.replace(regex, '<mark>$1</mark>');
+      if (state.searchMode !== 'trigger') {
+        displayContent = displayContent.replace(regex, '<mark>$1</mark>');
+      }
     }
 
     // Check if template contains placeholder 'xxx' or 'XXX'
@@ -1026,6 +1037,30 @@
       elements.searchInput.focus();
     });
 
+    // Search Mode Toggle (Semua vs Hanya Trigger)
+    if (elements.searchModeContainer) {
+      elements.searchModeContainer.addEventListener('click', (e) => {
+        const pill = e.target.closest('.search-mode-pill');
+        if (!pill) return;
+        const mode = pill.dataset.mode;
+        if (state.searchMode === mode) return;
+
+        state.searchMode = mode;
+        elements.searchModeContainer.querySelectorAll('.search-mode-pill').forEach(btn => btn.classList.remove('active'));
+        pill.classList.add('active');
+
+        // Dynamic placeholder update
+        if (mode === 'trigger') {
+          elements.searchInput.placeholder = "Cari kata trigger saja (contoh: sp/, 2id/)...";
+        } else {
+          elements.searchInput.placeholder = "Cari trigger (contoh: kode/, 2id/) atau kata...";
+        }
+
+        applyFilters();
+        elements.searchInput.focus();
+      });
+    }
+
     // Category Tabs
     elements.categoriesContainer.addEventListener('click', (e) => {
       const pill = e.target.closest('.cat-pill');
@@ -1049,6 +1084,12 @@
       elements.searchInput.value = '';
       state.searchQuery = '';
       state.activeCategory = 'all';
+      state.searchMode = 'all';
+      if (elements.searchModeContainer) {
+        elements.searchModeContainer.querySelectorAll('.search-mode-pill').forEach(p => p.classList.remove('active'));
+        if (elements.btnModeAll) elements.btnModeAll.classList.add('active');
+      }
+      elements.searchInput.placeholder = "Cari trigger (contoh: kode/, 2id/) atau kata...";
       document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
       document.querySelector('.cat-pill[data-category="all"]').classList.add('active');
       elements.btnClearSearch.style.display = 'none';
